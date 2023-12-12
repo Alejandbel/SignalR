@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34202.233
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR", "SignalR\SignalR.csproj", "{1E62B173-B577-4D40-8A48-CF58DF9544A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{C1702678-5854-41AC-80C7-6D5DB1B9040A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{8951A53D-2869-4D46-8393-2B039FADD3AB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1E62B173-B577-4D40-8A48-CF58DF9544A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E62B173-B577-4D40-8A48-CF58DF9544A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E62B173-B577-4D40-8A48-CF58DF9544A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E62B173-B577-4D40-8A48-CF58DF9544A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1702678-5854-41AC-80C7-6D5DB1B9040A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1702678-5854-41AC-80C7-6D5DB1B9040A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1702678-5854-41AC-80C7-6D5DB1B9040A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1702678-5854-41AC-80C7-6D5DB1B9040A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8951A53D-2869-4D46-8393-2B039FADD3AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8951A53D-2869-4D46-8393-2B039FADD3AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8951A53D-2869-4D46-8393-2B039FADD3AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8951A53D-2869-4D46-8393-2B039FADD3AB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7A1A53D9-5BCC-4B79-B52C-FB25C129E958}
+	EndGlobalSection
+EndGlobal
