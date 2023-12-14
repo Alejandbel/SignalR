@@ -51,6 +51,11 @@ namespace Server.Zonk
 			player.Dices = dices as HashSet<int>;
 
 			if (!ZonkUtils.IsAbleToMove(dices))
+			{
+				player.IsZonked = true;
+				player.Score = 0;
+				return dices;
+			} 
 
 			return dices;
 		}

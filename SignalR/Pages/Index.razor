@@ -1,3 +1,44 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Http.Connections
+@using Microsoft.AspNetCore.SignalR.Client
+<div>
+	<input @bind-value="message" type="text"/>
+	<input type="button" value="Отправить" @onclick=OnClick />
+</div>
+<div id="chatroom">
+	@foreach(var message in messages)
+	{
+		<p>@message</p>
+	}
+</div>
 
-<h1>Hello, world!</h1>
+@code {
+	string message;
+
+	protected List<string> messages = new();
+	HubConnection connection;
+
+
+	protected async Task OnClick()
+	{
+		await connection.InvokeAsync("Send", message);
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		connection = new HubConnectionBuilder()
+				.WithUrl("https://localhost:7223/zonk", HttpTransportType.WebSockets, o => o.SkipNegotiation = true)
+				.WithAutomaticReconnect()
+				.Build();
+
+		await connection.StartAsync();
+
+
+		connection.On<string>("Receive", (message) =>
+		{
+			messages.Insert(0, message);
+			StateHasChanged();
+		});
+	}
+	
+}
