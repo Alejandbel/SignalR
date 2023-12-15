@@ -11,6 +11,8 @@ namespace Server.Zonk
 		private Dictionary<string, PlayerMove> playersMove = new();
 		public Dictionary<string, PlayerMove> PlayersMove { get => playersMove; }
 
+		public bool IsEnded {get => playersMove.Values.All(p => p.IsEnded);}
+
 		public ZonkRound(IEnumerable<string> players)
 		{
             foreach (var player in players)

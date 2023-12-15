@@ -8,11 +8,12 @@ using System.Xml.Linq;
 
 namespace Server.Hubs
 {
-	public class ZonkHub : Hub, IZonkClient
+	public class ZonkHub : Hub<IZonkHub>, IZonkClient
 	{
 		private readonly ZonkRooms _zonkRooms;
 
-		public ZonkHub([FromServices] ZonkRooms zonkGame) {
+		public ZonkHub([FromServices] ZonkRooms zonkGame)
+		{
 			_zonkRooms = zonkGame;
 		}
 
@@ -46,67 +47,68 @@ namespace Server.Hubs
 			return Task.FromResult(result);
 		}
 
-		public Task<ResponseDTO> AddPlayer(string gameId, string name)
+		public async Task<ResponseDTO> AddPlayer(string gameId, string name)
 		{
 			ResponseDTO result;
 			try
 			{
 				var game = _zonkRooms.GetGameOrFail(gameId);
 				game.AddPlayer(name);
+				await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
 				result = new();
 			}
 			catch (ServerException err)
 			{
 				result = new(err);
 			}
-			return Task.FromResult(result);
+			return result;
 		}
 
-		public Task<ResponseDTO> EndMove(string gameId, string name, IEnumerable<int> dices)
+		public async Task<ResponseDTO> EndMove(string gameId, string name, IEnumerable<int> dices)
 		{
 			ResponseDTO result;
 			try
 			{
 				var game = _zonkRooms.GetGameOrFail(gameId);
 				game.EndMove(name, dices);
+				await Clients.Groups(gameId).GameChanged(game.GameInfo);
 				result = new();
 			}
 			catch (ServerException err)
 			{
 				result = new(err);
 			}
-			return Task.FromResult(result);
+			return result;
 		}
 
-		public Task<ResponseDTO<GameInfo>> InitializeGame(string name)
+		public async Task<ResponseDTO<GameInfo>> InitializeGame(string name)
 		{
 			ResponseDTO<GameInfo> result;
 			try
 			{
 				var game = _zonkRooms.AddGame(name);
+				await Groups.AddToGroupAsync(Context.ConnectionId, game.GameId);
 				result = new(game);
 			}
 			catch (ServerException err)
 			{
 				result = new(err);
 			}
-			return Task.FromResult(result);
+			return result;
 		}
 
-		public Task<ResponseDTO<IEnumerable<int>>> RerollDices(string gameId, string name, IEnumerable<int> dices)
+		public async Task<ResponseDTO<IEnumerable<int>>> RerollDices(string gameId, string name, IEnumerable<int> dices)
 		{
 			ResponseDTO<IEnumerable<int>> result;
 			try
 			{
 				var game = _zonkRooms.GetGameOrFail(gameId);
 				var newDices = game.RerollDices(name, dices);
+				await Clients.Groups(gameId).GameChanged(game.GameInfo);
 				result = new(newDices);
 			}
-			catch (ServerException err)
-			{
-				result = new(err);
-			}
-			return Task.FromResult(result);
+			catch (ServerException err) { result = new(err); }
+			return result;
 		}
 
 		public Task<ResponseDTO<IEnumerable<int>>> RollDices(string gameId, string name)

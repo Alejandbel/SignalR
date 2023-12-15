@@ -5,6 +5,8 @@
 		IDictionary<string, List<int>> Score, 
 		int CurrentRound,
 		IDictionary<string, PlayerMove>? Moves,
-		bool IsStarted
+		bool IsStarted,
+		bool IsEnded = false,
+	    string? winner = null
 	);
 }
