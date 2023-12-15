@@ -11,6 +11,7 @@ namespace Server
 
 
 			builder.Services.AddSignalR();
+			builder.Services.AddSingleton<ZonkGame>();
 
 			var app = builder.Build();
 
