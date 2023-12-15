@@ -13,20 +13,30 @@
     <tbody>
         @for (int i = 0; i < 10; i++)
         {
+            var round = i + 1;
+
             <tr>
+                <td>@round</td>
 
                 @foreach (var user in Score)
                 {
-                    var round = i + 1;
                     int score = (i < user.Value.Count) ? user.Value[i] : 0;
-                    <td>@round</td>
                     <td>@score</td>
                 }
             </tr>
-
         }
-
     </tbody>
+
+    <tfoot>
+        <tr>
+            <td>Full Score</td>
+            @foreach (var user in Score)
+            {
+                int score = user.Value.Sum();
+                <td>@score</td>
+            }
+        </tr>
+    </tfoot>
 </table>
 
 

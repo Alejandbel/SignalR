@@ -31,14 +31,14 @@
 {
     <h1>Your nickname: @Name</h1>
 
-    @if (GameId == default)
+    @if (gameInfo.GameId == default)
     {
         <button @onclick="StartGame">Start game</button>
     }
     else
     {
         <TableScore Score="@gameInfo.Score" />
-        <h3>@gameInfo.Score</h3>
+        <h3>@gameInfo.CurrentRound</h3>
 
         <DiceList OnClick="ChooseDice" DiceNumbers="@diceNumbers" />
         <DiceList OnClick="CancelDice" DiceNumbers="@selectedDices" />
@@ -48,57 +48,36 @@
 
         <button @onclick="Roll">Roll the dice</button>
         <button @onclick="EndMove">Save</button>
-
-        <div>
-            <input @bind-value="message" type="text" />
-            <input type="button" value="Отправить" @onclick=OnClick />
-        </div>
-
-        <div id="chatroom">
-            @foreach (var message in messages)
-            {
-                <p>@message</p>
-            }
-        </div>
     }
 }
 
 @code {
     public GameInfo gameInfo;
 
-    protected int renderCount = 0;
+    public int GameScore;
 
     protected List<int> diceNumbers = new List<int>();
 
-    string Name;
+    public string Name;
 
-    string message;
-
-    int GameId;
-
-    int RoundScore;
+    public int RoundScore;
 
     protected List<int> selectedDices = new List<int>();
 
-    protected List<string> messages = new();
     HubConnection connection;
 
     protected async Task CancelDice(int diceIndex)
     {
         diceNumbers.Add(selectedDices[diceIndex]);
         selectedDices.RemoveAt(diceIndex);
-        Console.WriteLine(ZonkUtils.IsAbleToMove(selectedDices));
         RoundScore = ZonkUtils.GetScore(selectedDices);
-        Console.WriteLine(ZonkUtils.GetScore(selectedDices));
     }
 
     protected async Task ChooseDice(int diceIndex)
     {
         selectedDices.Add(diceNumbers[diceIndex]);
         diceNumbers.RemoveAt(diceIndex);
-        Console.WriteLine(ZonkUtils.IsAbleToMove(selectedDices));
         RoundScore = ZonkUtils.GetScore(selectedDices);
-        Console.WriteLine(ZonkUtils.GetScore(selectedDices));
     }
 
     protected async Task Roll()
@@ -112,8 +91,7 @@
 
     protected async Task StartGame()
     {
-        //GameId = ZonkClient.StartGame();
-        GameId = 1;
+        await ZonkClient.StartGame("1");
     }
 
     protected async Task EndMove()
