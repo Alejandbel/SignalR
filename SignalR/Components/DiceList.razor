@@ -1,0 +1,18 @@
+﻿<ul id="dices-list">
+    @for (int i = 0; i < DiceNumbers.Count; i++)
+    {
+        var diceNumber = i;
+
+        <li>
+            <Dice OnClick="OnClick" Number="DiceNumbers[diceNumber]" Index="diceNumber" />
+        </li>
+    }
+</ul>
+
+@code {
+    [Parameter]
+    public EventCallback<int> OnClick { get; set; }
+
+    [Parameter]
+    public List<int> DiceNumbers { get; set; }
+}

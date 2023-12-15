@@ -1,0 +1,36 @@
+﻿@using Domain.Shared
+
+<table>
+    <thead>
+        <tr>
+            <th>Round/User</th>
+            @foreach (var user in Score)
+            {
+                <th>@user.Key</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < 10; i++)
+        {
+            <tr>
+
+                @foreach (var user in Score)
+                {
+                    var round = i + 1;
+                    int score = (i < user.Value.Count) ? user.Value[i] : 0;
+                    <td>@round</td>
+                    <td>@score</td>
+                }
+            </tr>
+
+        }
+
+    </tbody>
+</table>
+
+
+@code {
+    [Parameter]
+    public IDictionary<string, List<int>> Score { get; set; }
+}

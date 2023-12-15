@@ -1,0 +1,26 @@
+﻿<img @onclick="OnDiceClick" src=@imagePath />
+
+@code {
+    [Parameter]
+    public EventCallback<int>? OnClick { get; set; }
+
+    [Parameter]
+    public int Number { get; set; }
+
+    [Parameter]
+    public int Index { get; set; }
+
+    [Parameter]
+    public bool IsSelected { get; set; }
+
+    protected async Task OnDiceClick()
+    {
+        await OnClick?.InvokeAsync(Index);
+    }
+
+    protected string imagePath = "image.png";
+    protected override void OnParametersSet()
+    {
+        imagePath = $"Images/dice{Number}.png";
+    }
+}
