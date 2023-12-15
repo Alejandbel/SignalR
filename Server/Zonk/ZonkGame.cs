@@ -17,7 +17,7 @@ namespace Server
 			Id, 
 			GetScore(),
 			GetLastRoundNumber(),
-			(rounds == null || rounds.Count() == 0) ? GetLastRound().PlayersMove : null, 
+			(rounds != null && rounds.Count() > 0) ? GetLastRound().PlayersMove : null, 
 			isStarted);
 		}
 

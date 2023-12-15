@@ -64,8 +64,6 @@
 
     protected List<int> selectedDices = new List<int>();
 
-    HubConnection connection;
-
     protected async Task CancelDice(int diceIndex)
     {
         diceNumbers.Add(selectedDices[diceIndex]);
@@ -100,11 +98,6 @@
         diceNumbers.Clear();
     }
 
-    protected async Task OnClick()
-    {
-        await connection.InvokeAsync("Send", Name);
-    }
-
     protected override async Task OnInitializedAsync()
     {
         Name = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "name");
@@ -113,6 +106,7 @@
             Login();
         }
 
+        HubConnection connection;
         connection = new HubConnectionBuilder()
          .WithUrl("https://localhost:7223/zonk", HttpTransportType.WebSockets, o => o.SkipNegotiation = true)
          .WithAutomaticReconnect()
