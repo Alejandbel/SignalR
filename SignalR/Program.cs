@@ -5,6 +5,7 @@ using Domain.Shared;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using SignalR.Clients;
+using SignalR.Utils;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -19,6 +20,7 @@ await connection.StartAsync();
 
 builder.Services.AddSingleton((_) => connection);
 builder.Services.AddSingleton<IZonkClient, ZonkClient>();
+builder.Services.AddSingleton<IJsUtils, JsUtils>();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

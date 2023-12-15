@@ -1,0 +1,48 @@
+﻿@page "/games"
+@inject IZonkClient ZonkClient
+@inject IJsUtils JsUtils
+
+<div class="container">
+	<h3>Games</h3>
+
+	@if (games != null)
+	{
+		<div class="row row-cols-1 row-cols-md-3 g-4">
+			@foreach (var game in games)
+			{
+				<div class="col">
+					<div class="card">
+						<img src="Images/dices.jpg" class="card-img-top" alt="dice" />
+						<div class="card-body">
+							<h5 class="card-title">
+								@game.GameId
+							</h5>
+							<a href="#" class="btn btn-primary">Join game!</a>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+
+	}
+</div>
+
+
+@code {
+	protected IEnumerable<GameInfo>? games = null;
+
+	protected override async Task OnInitializedAsync()
+	{
+		var response = await ZonkClient.GetGames();
+		if (!response.IsSuccess)
+		{
+			await JsUtils.Alert(response.Error!.Message);
+		}
+		else
+		{
+			games = response.Data;
+		}
+
+		await base.OnInitializedAsync();
+	}
+}
