@@ -106,22 +106,8 @@
             Login();
         }
 
-        HubConnection connection;
-        connection = new HubConnectionBuilder()
-         .WithUrl("https://localhost:7223/zonk", HttpTransportType.WebSockets, o => o.SkipNegotiation = true)
-         .WithAutomaticReconnect()
-         .Build();
-
-        await connection.StartAsync();
-
         gameInfo = (await ZonkClient.InitializeGame(Name)).Data;
         Console.WriteLine(gameInfo.Score);
-
-        connection.On<GameInfo>("GetGame", (info) =>
-        {
-            gameInfo = info;
-            StateHasChanged();
-        });
     }
 
     protected async void Login()
