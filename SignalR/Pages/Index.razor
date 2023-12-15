@@ -1,44 +1,161 @@
 ﻿@page "/"
+@using Domain.Shared
 @using Microsoft.AspNetCore.Http.Connections
 @using Microsoft.AspNetCore.SignalR.Client
-<div>
-	<input @bind-value="message" type="text"/>
-	<input type="button" value="Отправить" @onclick=OnClick />
-</div>
-<div id="chatroom">
-	@foreach(var message in messages)
-	{
-		<p>@message</p>
-	}
-</div>
+@using Domain
+@inject IJSRuntime JsRuntime
+@inject IZonkClient ZonkClient
+
+<PageTitle>Zonk</PageTitle>
+
+<style>
+    #dices-list {
+        padding: 20px;
+        margin: 0;
+        list-style-type: none;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    img {
+        width: 40px;
+    }
+
+    .test {
+        border: 2px solid black;
+    }
+</style>
+
+@if (!String.IsNullOrEmpty(Name))
+{
+    <h1>Your nickname: @Name</h1>
+
+    @if (GameId == default)
+    {
+        <button @onclick="StartGame">Start game</button>
+    }
+    else
+    {
+        <TableScore Score="@gameInfo.score" />
+        <h3>@gameInfo.score</h3>
+
+        <DiceList OnClick="ChooseDice" DiceNumbers="@diceNumbers" />
+        <DiceList OnClick="CancelDice" DiceNumbers="@selectedDices" />
+
+        <p>Round score: @RoundScore</p>
+        <p>Game score: </p>
+
+        <button @onclick="Roll">Roll the dice</button>
+        <button @onclick="EndMove">Save</button>
+
+        <div>
+            <input @bind-value="message" type="text" />
+            <input type="button" value="Отправить" @onclick=OnClick />
+        </div>
+
+        <div id="chatroom">
+            @foreach (var message in messages)
+            {
+                <p>@message</p>
+            }
+        </div>
+    }
+}
 
 @code {
-	string message;
+    public GameInfo gameInfo;
 
-	protected List<string> messages = new();
-	HubConnection connection;
+    protected int renderCount = 0;
 
+    protected List<int> diceNumbers = new List<int>();
 
-	protected async Task OnClick()
-	{
-		await connection.InvokeAsync("Send", message);
-	}
+    string Name;
 
-	protected override async Task OnInitializedAsync()
-	{
-		connection = new HubConnectionBuilder()
-				.WithUrl("https://localhost:7223/zonk", HttpTransportType.WebSockets, o => o.SkipNegotiation = true)
-				.WithAutomaticReconnect()
-				.Build();
+    string message;
 
-		await connection.StartAsync();
+    int GameId;
 
+    int RoundScore;
 
-		connection.On<string>("Receive", (message) =>
-		{
-			messages.Insert(0, message);
-			StateHasChanged();
-		});
-	}
-	
+    protected List<int> selectedDices = new List<int>();
+
+    protected List<string> messages = new();
+    HubConnection connection;
+
+    protected async Task CancelDice(int diceIndex)
+    {
+        diceNumbers.Add(selectedDices[diceIndex]);
+        selectedDices.RemoveAt(diceIndex);
+        Console.WriteLine(ZonkUtils.IsAbleToMove(selectedDices));
+        RoundScore = ZonkUtils.GetScore(selectedDices);
+        Console.WriteLine(ZonkUtils.GetScore(selectedDices));
+    }
+
+    protected async Task ChooseDice(int diceIndex)
+    {
+        selectedDices.Add(diceNumbers[diceIndex]);
+        diceNumbers.RemoveAt(diceIndex);
+        Console.WriteLine(ZonkUtils.IsAbleToMove(selectedDices));
+        RoundScore = ZonkUtils.GetScore(selectedDices);
+        Console.WriteLine(ZonkUtils.GetScore(selectedDices));
+    }
+
+    protected async Task Roll()
+    {
+        //diceNumbers = ZonkClient.ReRoll(GameId, Name, selectedDices);
+        selectedDices = new();
+        RoundScore = 0;
+        Random random = new Random();
+        diceNumbers = ZonkUtils.RollDices(random.Next(1, 7)).ToList();
+    }
+
+    protected async Task StartGame()
+    {
+        //GameId = ZonkClient.StartGame();
+        GameId = 1;
+    }
+
+    protected async Task EndMove()
+    {
+        //ZonkClient.EndMove(GameId, Name, selectedDices)
+        diceNumbers.Clear();
+    }
+
+    protected async Task OnClick()
+    {
+        await connection.InvokeAsync("Send", Name);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Name = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "name");
+        if (String.IsNullOrEmpty(Name))
+        {
+            Login();
+        }
+
+        connection = new HubConnectionBuilder()
+         .WithUrl("https://localhost:7223/zonk", HttpTransportType.WebSockets, o => o.SkipNegotiation = true)
+         .WithAutomaticReconnect()
+         .Build();
+
+        await connection.StartAsync();
+
+        gameInfo = (await ZonkClient.InitializeGame(Name)).Data;
+        Console.WriteLine(gameInfo.score);
+
+        connection.On<GameInfo>("GetGame", (info) =>
+        {
+            gameInfo = info;
+            StateHasChanged();
+        });
+    }
+
+    protected async void Login()
+    {
+        Name = await JsRuntime.InvokeAsync<string>("prompt", "Enter your nickname:");
+        await JsRuntime.InvokeAsync<string>("localStorage.setItem", "name", Name);
+        StateHasChanged();
+    }
 }
