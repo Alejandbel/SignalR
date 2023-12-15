@@ -37,8 +37,8 @@
     }
     else
     {
-        <TableScore Score="@gameInfo.score" />
-        <h3>@gameInfo.score</h3>
+        <TableScore Score="@gameInfo.Score" />
+        <h3>@gameInfo.Score</h3>
 
         <DiceList OnClick="ChooseDice" DiceNumbers="@diceNumbers" />
         <DiceList OnClick="CancelDice" DiceNumbers="@selectedDices" />
@@ -143,7 +143,7 @@
         await connection.StartAsync();
 
         gameInfo = (await ZonkClient.InitializeGame(Name)).Data;
-        Console.WriteLine(gameInfo.score);
+        Console.WriteLine(gameInfo.Score);
 
         connection.On<GameInfo>("GetGame", (info) =>
         {
