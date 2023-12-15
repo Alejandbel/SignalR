@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR", "SignalR\SignalR.csproj", "{1E62B173-B577-4D40-8A48-CF58DF9544A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalR", "SignalR\SignalR.csproj", "{1E62B173-B577-4D40-8A48-CF58DF9544A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{C1702678-5854-41AC-80C7-6D5DB1B9040A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{C1702678-5854-41AC-80C7-6D5DB1B9040A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{8951A53D-2869-4D46-8393-2B039FADD3AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server\Server.csproj", "{8951A53D-2869-4D46-8393-2B039FADD3AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
