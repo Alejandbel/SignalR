@@ -2,9 +2,9 @@
 {
 	public record GameInfo(
 		string GameId, 
-		IDictionary<string, List<int>> score, 
-		int currentRound,
-		IDictionary<string, IEnumerable<int>?> rolledDices,
+		IDictionary<string, List<int>> Score, 
+		int CurrentRound,
+		IDictionary<string, PlayerMove>? Moves,
 		bool IsStarted
 	);
 }

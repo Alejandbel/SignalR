@@ -1,4 +1,5 @@
 ﻿using Domain;
+using Domain.Shared;
 using Server.Excpetions;
 using Server.Zonk;
 using System.Numerics;
@@ -9,9 +10,16 @@ namespace Server
 	{
 		protected HashSet<string> players;
 		protected List<ZonkRound> rounds;
-		protected bool isStarted = false;
+		private bool isStarted = false;
 
 		public string Id { get; }
+		public GameInfo GameInfo { get => new GameInfo(
+			Id, 
+			GetScore(),
+			GetLastRoundNumber(),
+			(rounds == null || rounds.Count() == 0) ? GetLastRound().PlayersMove : null, 
+			isStarted);
+		}
 
 		public ZonkGame(string id, string initializer)
 		{
@@ -36,10 +44,10 @@ namespace Server
 			rounds.Add(new ZonkRound(players));
 		}
 
-		public void EndMove(string name)
+		public void EndMove(string name, IEnumerable<int> dices)
 		{
 			var round = GetLastRound();
-			round.EndMove(name);
+			round.EndMove(name, dices);
 		}
 
 		public IEnumerable<int> RollDices(string name)
@@ -48,10 +56,21 @@ namespace Server
 			return round.RollDices(name);
 		}
 
-		public void UpdateScore(string name, IEnumerable<int> dices)
+		public IEnumerable<int> RerollDices(string name, IEnumerable<int> dices)
 		{
 			var round = GetLastRound();
-			round.UpdateScore(name, dices);
+			return round.RerollDices(name, dices);
+		}
+
+
+		public ZonkRound GetLastRound()
+		{
+			return rounds.Last();
+		}
+
+		public int GetLastRoundNumber()
+		{
+			return rounds.Count() - 1;
 		}
 
 		public KeyValuePair<string, List<int>> GetScoreByPlayer(string name)
@@ -64,9 +83,5 @@ namespace Server
 			return new Dictionary<string, List<int>>(players.Select(GetScoreByPlayer));
 		}
 
-		private ZonkRound GetLastRound()
-		{
-			return rounds.Last();
-		}
 	}
 }

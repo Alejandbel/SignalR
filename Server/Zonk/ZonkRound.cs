@@ -1,4 +1,5 @@
 ﻿using Domain;
+using Domain.Shared;
 using Server.Excpetions;
 
 namespace Server.Zonk
@@ -7,9 +8,8 @@ namespace Server.Zonk
 	{
 		static private int scoreToEnd = 300;
 
-		private record struct PlayerMove(string Name, ISet<int>? Dices = null, int DicesLeft = 6, bool IsEnded = false, int Score = 0, bool IsZonked = false);
-
-		private Dictionary<string, PlayerMove> playersMove { get; set; } = new();
+		private Dictionary<string, PlayerMove> playersMove = new();
+		public Dictionary<string, PlayerMove> PlayersMove { get => playersMove; }
 
 		public ZonkRound(IEnumerable<string> players)
 		{
@@ -25,16 +25,21 @@ namespace Server.Zonk
 			return player.Score;
 		}
 
-		public void EndMove(string name)
+		public void EndMove(string name, IEnumerable<int> dices)
 		{
 			var player = GetNotEndedPlayerOrFail(name);
 
+			AssertDicesValid(dices, player);
 
-			if (player.Score < scoreToEnd)
+			var score = ZonkUtils.GetScore(dices);
+			var newScore = player.Score + score;
+
+			if (newScore < scoreToEnd)
 			{
 				throw new ServerException($"Score must be above {scoreToEnd} to end move");
 			}
 
+			player.Score = newScore;
 			player.IsEnded = true;
 		}
 
@@ -42,13 +47,13 @@ namespace Server.Zonk
 		{
 			var player = GetNotEndedPlayerOrFail(name);
 
-			if (player.DicesLeft == 0)
+			if (player.Dices != null)
 			{
-				throw new ServerException("All dices already roled");
+				throw new ServerException("Dices already roled");
 			}
 
-			var dices = ZonkUtils.RollDices(player.DicesLeft);
-			player.Dices = dices as HashSet<int>;
+			var dices = ZonkUtils.RollDices(6);
+			player.Dices = dices;
 
 			if (!ZonkUtils.IsAbleToMove(dices))
 			{
@@ -60,10 +65,30 @@ namespace Server.Zonk
 			return dices;
 		}
 
-		public void UpdateScore(string name, IEnumerable<int> dices)
+		public IEnumerable<int> RerollDices(string name, IEnumerable<int> dices)
 		{
 			var player = GetPlayerOrFail(name);
+			AssertDicesValid(dices, player);
+			player.Dices = player.Dices.Except(dices);
 
+			var score = ZonkUtils.GetScore(dices);
+			player.Score += score;
+
+			var newDices = ZonkUtils.RollDices(player.Dices.Count());
+
+			if (score == 0)
+			{
+				player.IsZonked = true;
+				player.IsEnded = true;
+			}
+
+			player.Dices = newDices;
+
+			return dices;
+		}
+
+		private static void AssertDicesValid(IEnumerable<int> dices, PlayerMove player)
+		{
 			if (player.Dices == null)
 			{
 				throw new ServerException("To update score you have to role dices first");
@@ -76,16 +101,6 @@ namespace Server.Zonk
 					throw new ServerException($"Invalid dice provided: {dice}");
 				}
 			}
-
-			var score = ZonkUtils.GetScore(dices);
-
-			foreach (var dice in dices)
-			{
-				player.Dices.Remove(dice);
-			}
-
-			player.Score += score;
-			player.DicesLeft -= dices.Count();
 		}
 
 		private PlayerMove GetPlayerOrFail(string name)

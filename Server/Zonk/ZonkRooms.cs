@@ -1,19 +1,39 @@
-﻿namespace Server.Zonk
+﻿using Domain.Shared;
+using Server.Excpetions;
+
+namespace Server.Zonk
 {
 	public class ZonkRooms
 	{
 		private IDictionary<string, ZonkGame> games = new Dictionary<string, ZonkGame>();
 
-		public string AddGame(string initializer)
+		public GameInfo AddGame(string initializer)
 		{
 			var uuid = Guid.NewGuid().ToString();
 			games[uuid] = new ZonkGame(uuid, initializer);
-			return uuid;
+			return games[uuid].GameInfo;
 		}
 
-		public string[] ListGames()
+		public IEnumerable<GameInfo> ListGames()
 		{
-			return games.Keys.ToArray();
+			return games.Values.Select(game => game.GameInfo);
+		}
+
+		public GameInfo GetGameInfo(string gameId)
+		{
+			var game = GetGameOrFail(gameId);
+			return game.GameInfo;
+		}
+
+		public ZonkGame GetGameOrFail(string gameId)
+		{
+			ZonkGame game;
+			if (!games.TryGetValue(gameId, out game))
+			{
+				throw new ServerException("Game not found");
+			};
+
+			return game;
 		}
 	}
 }

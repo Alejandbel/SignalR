@@ -2,16 +2,7 @@
 
 namespace Domain.Shared
 {
-	public class ResponseDTO {
-		public bool IsSuccess { get; set; }
-		public ServerException? Error { get; set; }
-
-		public ResponseDTO(ServerException error)
-		{
-			Error = error;
-			IsSuccess = false;
-		}
-	}
+	
 
 	public class ResponseDTO<T>
 	{
@@ -31,5 +22,11 @@ namespace Domain.Shared
 			Error = error;
 			IsSuccess = false;
 		}
+	}
+
+	public class ResponseDTO : ResponseDTO<int>
+	{
+		public ResponseDTO(): base(1) { }
+		public ResponseDTO(ServerException error): base(error) { }
 	}
 }
