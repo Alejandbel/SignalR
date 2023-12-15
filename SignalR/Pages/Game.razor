@@ -1,0 +1,109 @@
+﻿@page "/games/{gameId}"
+@inject IZonkClient ZonkClient
+@inject IJsUtils JsUtils
+
+<style>
+    #dices-list {
+        padding: 20px;
+        margin: 0;
+        list-style-type: none;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    img {
+        width: 40px;
+    }
+
+    .test {
+        border: 2px solid black;
+    }
+</style>
+
+@if (!gameInfo.IsStarted)
+{
+    <button @onclick="StartGame">Start game</button>
+}
+else
+{
+    <TableScore Score="@gameInfo.Score" />
+    <h3>@gameInfo.CurrentRound</h3>
+
+    <DiceList OnClick="ChooseDice" DiceNumbers="@diceNumbers" />
+    <DiceList OnClick="CancelDice" DiceNumbers="@selectedDices" />
+
+    <p>Round score: @RoundScore</p>
+    <p>Game score: </p>
+
+    <button @onclick="Roll">Roll the dice</button>
+    <button @onclick="EndMove">Save</button>
+}
+
+@code {
+    [Parameter]
+    public string gameId { get; set; }
+
+    public GameInfo gameInfo;
+
+    public int GameScore;
+
+    public int RoundScore;
+
+
+    protected List<int> diceNumbers = new List<int>();
+
+    protected List<int> selectedDices = new List<int>();
+
+    protected async Task StartGame()
+    {
+        var response = await ZonkClient.StartGame(gameId);
+
+        if (!response.IsSuccess)
+        {
+            JsUtils.Alert(response.Error.Message);
+        }
+
+        gameInfo = response.Data;
+    }
+
+    protected async Task CancelDice(int diceIndex)
+    {
+        diceNumbers.Add(selectedDices[diceIndex]);
+        selectedDices.RemoveAt(diceIndex);
+        RoundScore = ZonkUtils.GetScore(selectedDices);
+    }
+
+    protected async Task ChooseDice(int diceIndex)
+    {
+        selectedDices.Add(diceNumbers[diceIndex]);
+        diceNumbers.RemoveAt(diceIndex);
+        RoundScore = ZonkUtils.GetScore(selectedDices);
+    }
+
+    protected async Task Roll()
+    {
+        //diceNumbers = ZonkClient.ReRoll(GameId, Name, selectedDices);
+        selectedDices = new();
+        RoundScore = 0;
+        Random random = new Random();
+        diceNumbers = ZonkUtils.RollDices(random.Next(1, 7)).ToList();
+    }
+
+    protected async Task EndMove()
+    {
+        //ZonkClient.EndMove(GameId, Name, selectedDices)
+        diceNumbers.Clear();
+    }
+
+    protected override async Task OnInitializedAsync(){
+        var response = await ZonkClient.GetGame(gameId);
+
+        if (!response.IsSuccess)
+        {
+            JsUtils.Alert(response.Error.Message);
+        }
+
+        gameInfo = response.Data;
+    }
+}

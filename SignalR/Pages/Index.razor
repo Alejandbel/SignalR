@@ -1,97 +1,31 @@
 ﻿@page "/"
 @inject IJSRuntime JsRuntime
 @inject IZonkClient ZonkClient
+@inject NavigationManager NavManager
 
 <PageTitle>Zonk</PageTitle>
-
-<style>
-    #dices-list {
-        padding: 20px;
-        margin: 0;
-        list-style-type: none;
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    img {
-        width: 40px;
-    }
-
-    .test {
-        border: 2px solid black;
-    }
-</style>
 
 @if (!String.IsNullOrEmpty(Name))
 {
     <h1>Your nickname: @Name</h1>
 
-    @if (gameInfo.GameId == default)
-    {
-        <button @onclick="StartGame">Start game</button>
-    }
-    else
-    {
-        <TableScore Score="@gameInfo.Score" />
-        <h3>@gameInfo.CurrentRound</h3>
+    <button @onclick="StartGame">Start game</button>
 
-        <DiceList OnClick="ChooseDice" DiceNumbers="@diceNumbers" />
-        <DiceList OnClick="CancelDice" DiceNumbers="@selectedDices" />
-
-        <p>Round score: @RoundScore</p>
-        <p>Game score: </p>
-
-        <button @onclick="Roll">Roll the dice</button>
-        <button @onclick="EndMove">Save</button>
-    }
 }
 
 @code {
-    public GameInfo gameInfo;
-
-    public int GameScore;
-
-    protected List<int> diceNumbers = new List<int>();
-
     public string Name;
-
-    public int RoundScore;
-
-    protected List<int> selectedDices = new List<int>();
-
-    protected async Task CancelDice(int diceIndex)
-    {
-        diceNumbers.Add(selectedDices[diceIndex]);
-        selectedDices.RemoveAt(diceIndex);
-        RoundScore = ZonkUtils.GetScore(selectedDices);
-    }
-
-    protected async Task ChooseDice(int diceIndex)
-    {
-        selectedDices.Add(diceNumbers[diceIndex]);
-        diceNumbers.RemoveAt(diceIndex);
-        RoundScore = ZonkUtils.GetScore(selectedDices);
-    }
-
-    protected async Task Roll()
-    {
-        //diceNumbers = ZonkClient.ReRoll(GameId, Name, selectedDices);
-        selectedDices = new();
-        RoundScore = 0;
-        Random random = new Random();
-        diceNumbers = ZonkUtils.RollDices(random.Next(1, 7)).ToList();
-    }
 
     protected async Task StartGame()
     {
-        await ZonkClient.StartGame("1");
-    }
+        var response = await ZonkClient.InitializeGame(Name);
 
-    protected async Task EndMove()
-    {
-        //ZonkClient.EndMove(GameId, Name, selectedDices)
-        diceNumbers.Clear();
+        if (!response.IsSuccess)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", response.Error.Message);
+        }
+
+        NavManager.NavigateTo("games/" + response.Data.GameId);
     }
 
     protected override async Task OnInitializedAsync()
@@ -101,9 +35,6 @@
         {
             Login();
         }
-
-        gameInfo = (await ZonkClient.InitializeGame(Name)).Data;
-        Console.WriteLine(gameInfo.Score);
     }
 
     protected async void Login()
