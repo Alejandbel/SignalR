@@ -2,16 +2,15 @@
 
 namespace Domain.Shared
 {
-	
-
 	public class ResponseDTO<T>
 	{
 		public T? Data { get; set; }
 		public bool IsSuccess { get; set; }
 		public ServerException? Error { get; set; }
 
+        public ResponseDTO(){}
 
-		public ResponseDTO(T? data = default)
+        public ResponseDTO(T? data = default)
 		{
 			Data = data;
 			IsSuccess = true;

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.Connections;
 using Server.Hubs;
+using Server.Zonk;
 
 namespace Server
 {
@@ -11,7 +12,7 @@ namespace Server
 
 
 			builder.Services.AddSignalR();
-			builder.Services.AddSingleton<ZonkGame>();
+			builder.Services.AddSingleton<ZonkRooms>();
 
 			var app = builder.Build();
 
