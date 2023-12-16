@@ -23,52 +23,59 @@
 	}
 </style>
 
-@if (gameInfo != null)
-{
-	<p>UserList</p>
-	<ul>
-		@foreach (var user in gameInfo.Score.Keys)
-		{
-			<li>@user</li>
-		}
-	</ul>
+<div class="container">
+	@if (gameInfo != null)
+	{
+		<p>User List</p>
+		<ul>
+			@foreach (var user in gameInfo.Score.Keys)
+			{
+				<li>@user</li>
+			}
+		</ul>
 
-	if (!gameInfo.IsStarted)
-	{
-		if (!gameInfo.Score.Keys.Contains(userName))
+		if (!gameInfo.IsStarted)
 		{
-			<button @onclick="JoinGame">Join game</button>
-		}
-		<button @onclick="StartGame">Start game</button>
-	}
-	else
-	{
-		<TableScore Score="@gameInfo.Score" />
-		<h3>@gameInfo.CurrentRound</h3>
-		if (gameInfo.Moves[userName].IsZonked)
-		{
-			<p>ZONKED!!!</p>
-		}
-		if (gameInfo.IsEnded)
-		{
-			<p>Winner: @gameInfo.winner</p>
+			if (!gameInfo.Score.Keys.Contains(userName))
+			{
+				<button @onclick="JoinGame">Join game</button>
+			}
+			<button @onclick="StartGame">Start game</button>
 		}
 		else
 		{
-			<DiceList OnClick="ChooseDice" DiceNumbers="@diceNumbers" />
-			<DiceList OnClick="CancelDice" DiceNumbers="@selectedDices" />
-
-			<p>Round score: @RoundScore</p>
-			<p>Game score: </p>
-
-			<button disabled=@(!ZonkUtils.MoveCanBeMade(selectedDices) && gameInfo.Moves[userName].Dices != null) @onclick="Roll">Roll the dice</button>
-			@if (gameInfo.Moves[userName].Dices != null)
+			<TableScore Score="@gameInfo.Score" CurrentRound="gameInfo.CurrentRound" />
+			if (!gameInfo.IsEnded)
 			{
-				<button disabled=@(!ZonkUtils.MoveCanBeMade(selectedDices)) @onclick="EndMove">Save</button>
+				<h3>Round: @(gameInfo.CurrentRound + 1)</h3>
+			}
+
+			if (IsZonked)
+			{
+				<h3>ZONKED!!!</h3>
+			}
+
+
+			if (gameInfo.IsEnded)
+			{
+				<h2>Winner: @gameInfo.winner</h2>
+				<NavLink href="/">Back to menu</NavLink>
+			}
+			else
+			{
+				<DiceList OnClick="ChooseDice" DiceNumbers="@diceNumbers" />
+				<DiceList OnClick="CancelDice" DiceNumbers="@selectedDices" />
+
+				<p>Selected dices score: @RoundScore</p>
+
+				<button disabled=@IsNotRollable @onclick="Roll">Roll the dice</button>
+				<button disabled=@CantSave @onclick="EndMove">Save</button>
 			}
 		}
-	}	
-}
+	}
+</div>
+
+
 
 @code {
 	[Parameter]
@@ -78,9 +85,39 @@
 
 	protected int GameScore;
 
-	protected int RoundScore;
+	protected int RoundScore { get => ZonkUtils.GetScore(selectedDices); }
 	protected string userName;
 
+	protected bool IsNotRollable
+	{
+		get
+		{
+			var move = gameInfo.Moves[userName]!;
+			if (move.Dices == null)
+			{
+				return false;
+			}
+
+			return IsZonked || (!ZonkUtils.MoveCanBeMade(selectedDices) && move.Dices != null);
+		}
+	}
+	protected bool CantSave
+	{
+		get
+		{
+			var move = gameInfo.Moves[userName]!;
+			return IsNotRollable || ((gameInfo.Moves[userName].Score + ZonkUtils.GetScore(selectedDices)) < 300);
+		}
+	}
+	protected bool IsZonked
+	{
+		get
+		{
+			var allDices = new List<int>(diceNumbers);
+			allDices.AddRange(selectedDices);
+			return !ZonkUtils.IsAbleToMove(allDices) && allDices.Count() > 0;
+		}
+	}
 
 	protected List<int> diceNumbers = new List<int>();
 
@@ -113,14 +150,12 @@
 	{
 		diceNumbers.Add(selectedDices[diceIndex]);
 		selectedDices.RemoveAt(diceIndex);
-		RoundScore = ZonkUtils.GetScore(selectedDices);
 	}
 
 	protected async Task ChooseDice(int diceIndex)
 	{
 		selectedDices.Add(diceNumbers[diceIndex]);
 		diceNumbers.RemoveAt(diceIndex);
-		RoundScore = ZonkUtils.GetScore(selectedDices);
 	}
 
 	protected async Task Roll()
@@ -135,7 +170,7 @@
 			}
 			selectedDices.Clear();
 			diceNumbers = response.Data?.ToList();
-		} 
+		}
 		else
 		{
 			var response = await ZonkClient.RollDices(GameId, userName);
@@ -174,7 +209,8 @@
 		gameInfo = response.Data;
 		diceNumbers = gameInfo?.Moves?[userName]?.Dices?.ToList() ?? new List<int>();
 
-		ZonkEvents.GameHasUpdated += (game => { 
+		ZonkEvents.GameHasUpdated += (async game =>
+		{
 			gameInfo = game;
 			StateHasChanged();
 		});

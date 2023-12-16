@@ -1,5 +1,9 @@
 ﻿@using Domain.Shared
-
+<style>
+    .selected-row {
+        background-color: lightgreen;
+    }
+</style>
 <table>
     <thead>
         <tr>
@@ -11,11 +15,11 @@
         </tr>
     </thead>
     <tbody>
-        @for (int i = 0; i < 10; i++)
+        @for (int i = 0; i < roundsToEnd; i++)
         {
             var round = i + 1;
 
-            <tr>
+            <tr class=@(i == CurrentRound ? "selected-row" : "")>
                 <td>@round</td>
 
                 @foreach (var user in Score)
@@ -41,6 +45,11 @@
 
 
 @code {
+    protected static int roundsToEnd = 10;
+
     [Parameter]
     public IDictionary<string, List<int>> Score { get; set; }
+
+    [Parameter]
+    public int CurrentRound { get; set; }
 }

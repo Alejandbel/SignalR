@@ -10,7 +10,6 @@ namespace Server
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
-
 			builder.Services.AddSignalR();
 			builder.Services.AddSingleton<ZonkRooms>();
 

@@ -4,8 +4,8 @@
 @inject NavigationManager NavManager
 
 <div class="container">
-	<h3>Games</h3>
-
+	<h2>Games</h2>
+	<NavLink href="/">Create new game</NavLink>
 	@if (games != null)
 	{
 		<div class="row row-cols-1 row-cols-md-3 g-4">
@@ -43,7 +43,7 @@
 		}
 		else
 		{
-			games = response.Data;
+			games = response.Data.Where(game => !game.IsStarted);
 		}
 
 		await base.OnInitializedAsync();

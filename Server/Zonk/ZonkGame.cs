@@ -22,7 +22,9 @@ namespace Server
 			GetScore(),
 			GetLastRoundNumber(),
 			(rounds != null && rounds.Count() > 0) ? GetLastRound().PlayersMove : null, 
-			isStarted);
+			isStarted, 
+			isEnded, 
+			winner);
 		}
 
 		public ZonkGame(string id, string initializer)
@@ -63,10 +65,12 @@ namespace Server
 		{
 			AssertGameNotEnded();
 			var round = GetLastRound();
-			return round.RollDices(name);
-		}
+			var dices = round.RollDices(name);
+            EndRoundIfPossible(round);
+			return dices;
+        }
 
-		public IEnumerable<int> RerollDices(string name, IEnumerable<int> dices)
+        public IEnumerable<int> RerollDices(string name, IEnumerable<int> dices)
 		{
 			AssertGameNotEnded();
 			var round = GetLastRound();
@@ -77,10 +81,11 @@ namespace Server
 
 		private void EndRoundIfPossible(ZonkRound round)
 		{
-			if (rounds.Count() == roundsToEnd)
+			if (rounds.Count() == roundsToEnd && round.IsEnded)
 			{
 				isEnded = true;
-				winner = GetScore().MaxBy(kv => kv.Value).Key;
+				winner = GetScore().MaxBy(kv => kv.Value.Sum()).Key;
+				return;
 			}
 
 			if (round.IsEnded)

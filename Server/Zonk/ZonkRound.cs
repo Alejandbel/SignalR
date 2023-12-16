@@ -59,10 +59,12 @@ namespace Server.Zonk
 
 			if (!ZonkUtils.IsAbleToMove(dices))
 			{
-				player.IsZonked = true;
-				player.Score = 0;
-				return dices;
-			}
+                player.IsZonked = true;
+                player.IsEnded = true;
+                player.Score = 0;
+                player.Dices = null;
+                player.DiceCount = 0;
+            }
 
 			return dices;
 		}
@@ -88,6 +90,8 @@ namespace Server.Zonk
 				player.IsZonked = true;
 				player.IsEnded = true;
 				player.Score = 0;
+				player.Dices = null;
+				player.DiceCount = 0;
 				return newDices;
 			}
 

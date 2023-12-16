@@ -13,7 +13,7 @@ namespace Domain.Shared
 		public bool IsEnded { get; set; } = false;
 		public int Score { get; set; } = 0;
 		public int DiceCount { get; set; } = 6;
-		public bool IsZonked = false;
+		public bool IsZonked { get; set; } = false;
 	}
 	
 
