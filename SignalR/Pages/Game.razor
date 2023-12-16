@@ -61,8 +61,11 @@
 			<p>Round score: @RoundScore</p>
 			<p>Game score: </p>
 
-			<button @onclick="Roll">Roll the dice</button>
-			<button @onclick="EndMove">Save</button>
+			<button disabled=@(!ZonkUtils.MoveCanBeMade(selectedDices) && gameInfo.Moves[userName].Dices != null) @onclick="Roll">Roll the dice</button>
+			@if (gameInfo.Moves[userName].Dices != null)
+			{
+				<button disabled=@(!ZonkUtils.MoveCanBeMade(selectedDices)) @onclick="EndMove">Save</button>
+			}
 		}
 	}	
 }
@@ -169,6 +172,7 @@
 		}
 
 		gameInfo = response.Data;
+		diceNumbers = gameInfo?.Moves?[userName]?.Dices?.ToList() ?? new List<int>();
 
 		ZonkEvents.GameHasUpdated += (game => { 
 			gameInfo = game;

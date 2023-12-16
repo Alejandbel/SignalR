@@ -26,6 +26,46 @@ namespace Domain
 			return result;
 		}
 
+		public static bool MoveCanBeMade(IEnumerable<int> dices)
+		{
+			if (dices.Count() == 0)
+			{
+				return false;
+			} 
+
+			var diceCounts = dices.GroupBy(x => x).ToDictionary(g => g.Key, g => g.Count());
+			int diceLen = diceCounts.Count;
+
+			if (diceLen == 6)
+			{
+				return true;
+			}
+
+			if (diceLen == 3 && diceCounts.All(x => x.Value == 2))
+			{
+				return true;
+			}
+
+			foreach (var kvp in diceCounts)
+			{
+				int count = kvp.Value;
+				int number = kvp.Key;
+
+				switch (number)
+				{
+					case 2:
+					case 3:
+					case 4:
+					case 6:
+						if (count != 3)
+							return false;
+						break;
+				}
+			}
+
+			return true;
+		}
+
 		public static int GetScore(IEnumerable<int> dices)
 		{
 			var diceCounts = dices.GroupBy(x => x).ToDictionary(g => g.Key, g => g.Count());

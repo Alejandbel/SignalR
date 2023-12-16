@@ -76,6 +76,11 @@ namespace Server.Zonk
 			var score = ZonkUtils.GetScore(dices);
 			player.Score += score;
 
+			if (player.DiceCount == 0)
+			{
+				//Bonus move
+				player.DiceCount = 6;
+			}
 			var newDices = ZonkUtils.RollDices(player.DiceCount);
 
 			if (!ZonkUtils.IsAbleToMove(newDices))
@@ -97,6 +102,11 @@ namespace Server.Zonk
 			{
 				throw new ServerException("To update score you have to role dices first");
 			}
+
+			if (!ZonkUtils.MoveCanBeMade(dices))
+			{
+				throw new ServerException("Move cannot be made, check your dices");
+			} 
 
 			foreach (var dice in dices)
 			{
