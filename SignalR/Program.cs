@@ -20,7 +20,9 @@ await connection.StartAsync();
 
 builder.Services.AddSingleton((_) => connection);
 builder.Services.AddSingleton<IZonkClient, ZonkClient>();
+builder.Services.AddSingleton<IZonkEvents, ZonkEventsClient>();
 builder.Services.AddSingleton<IJsUtils, JsUtils>();
+builder.Services.AddSingleton<UserUtils>();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

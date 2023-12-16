@@ -18,10 +18,12 @@ namespace Domain
 
 		public static IEnumerable<int> RollDices(int amount)
 		{
+			List<int> result = new List<int>();
 			for (int i = 0; i < amount; i++)
 			{
-				yield return random.Next(1, 7);
+				result.Add(random.Next(1, 7));
 			}
+			return result;
 		}
 
 		public static int GetScore(IEnumerable<int> dices)

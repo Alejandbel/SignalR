@@ -1,6 +1,7 @@
 ﻿@page "/"
 @inject IJSRuntime JsRuntime
 @inject IZonkClient ZonkClient
+@inject UserUtils UserUtils
 @inject NavigationManager NavManager
 
 <PageTitle>Zonk</PageTitle>
@@ -9,20 +10,20 @@
 {
     <h1>Your nickname: @Name</h1>
 
-    <button @onclick="StartGame">Start game</button>
+    <button @onclick="InitGame">Initialize game</button>
 
 }
 
 @code {
     public string Name;
 
-    protected async Task StartGame()
+    protected async Task InitGame()
     {
         var response = await ZonkClient.InitializeGame(Name);
 
         if (!response.IsSuccess)
         {
-            await JsRuntime.InvokeVoidAsync("alert", response.Error.Message);
+            await JsRuntime.InvokeVoidAsync("alert", response.Error);
         }
 
         NavManager.NavigateTo("games/" + response.Data.GameId);
@@ -30,17 +31,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Name = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "name");
-        if (String.IsNullOrEmpty(Name))
-        {
-            Login();
-        }
-    }
-
-    protected async void Login()
-    {
-        Name = await JsRuntime.InvokeAsync<string>("prompt", "Enter your nickname:");
-        await JsRuntime.InvokeAsync<string>("localStorage.setItem", "name", Name);
-        StateHasChanged();
+        Name = await UserUtils.GetNameOrLogin();
     }
 }

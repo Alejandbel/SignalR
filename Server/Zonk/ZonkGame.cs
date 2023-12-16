@@ -40,6 +40,10 @@ namespace Server
 
 		public void StartGame()
 		{
+			if (players.Count() < 2)
+			{
+				throw new ServerException("Not enought players");
+			} 
 			AssertGameNotEnded();
 			AssertGameNotStarted();
 

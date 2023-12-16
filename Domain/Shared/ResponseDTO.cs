@@ -6,7 +6,7 @@ namespace Domain.Shared
 	{
 		public T? Data { get; set; }
 		public bool IsSuccess { get; set; }
-		public ServerException? Error { get; set; }
+		public string? Error { get; set; }
 
         public ResponseDTO(){}
 
@@ -18,7 +18,7 @@ namespace Domain.Shared
 
 		public ResponseDTO(ServerException error) 
 		{
-			Error = error;
+			Error = error.Message;
 			IsSuccess = false;
 		}
 	}

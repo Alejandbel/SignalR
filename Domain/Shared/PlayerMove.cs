@@ -6,10 +6,15 @@ using System.Threading.Tasks;
 
 namespace Domain.Shared
 {
-	public record struct PlayerMove(string Name, 
-		IEnumerable<int>? Dices = null, 
-		bool IsEnded = false, 
-		int Score = 0,
-		bool IsZonked = false);
+	public record PlayerMove
+	{
+		public string Name { get; set; }
+		public IEnumerable<int>? Dices { get; set; } = null;
+		public bool IsEnded { get; set; } = false;
+		public int Score { get; set; } = 0;
+		public int DiceCount { get; set; } = 6;
+		public bool IsZonked = false;
+	}
+	
 
 }

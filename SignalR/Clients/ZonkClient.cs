@@ -11,7 +11,8 @@ namespace SignalR.Clients
         {
             _connection = connection;
         }
-        public Task<ResponseDTO> AddPlayer(string gameId, string name)
+
+		public Task<ResponseDTO> AddPlayer(string gameId, string name)
 		{
 			return _connection.InvokeAsync<ResponseDTO>("AddPlayer", gameId, name);
 		}
@@ -47,9 +48,9 @@ namespace SignalR.Clients
             return _connection.InvokeAsync<ResponseDTO<IEnumerable<int>>>("RollDices", gameId, name);
         }
 
-        public Task<ResponseDTO> StartGame(string gameId)
+        public Task<ResponseDTO<GameInfo>> StartGame(string gameId)
 		{
-            return _connection.InvokeAsync<ResponseDTO>("StartGame", gameId);
+            return _connection.InvokeAsync<ResponseDTO<GameInfo>>("StartGame", gameId);
         }
     }
 }

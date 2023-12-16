@@ -1,6 +1,7 @@
 ﻿@page "/games"
 @inject IZonkClient ZonkClient
 @inject IJsUtils JsUtils
+@inject NavigationManager NavManager
 
 <div class="container">
 	<h3>Games</h3>
@@ -10,6 +11,8 @@
 		<div class="row row-cols-1 row-cols-md-3 g-4">
 			@foreach (var game in games)
 			{
+				var link = $"games/{game.GameId}";
+
 				<div class="col">
 					<div class="card">
 						<img src="Images/dices.jpg" class="card-img-top" alt="dice" />
@@ -17,7 +20,7 @@
 							<h5 class="card-title">
 								@game.GameId
 							</h5>
-							<a href="#" class="btn btn-primary">Join game!</a>
+							<NavLink href=@link class="btn btn-primary">View game</NavLink>
 						</div>
 					</div>
 				</div>
@@ -36,7 +39,7 @@
 		var response = await ZonkClient.GetGames();
 		if (!response.IsSuccess)
 		{
-			await JsUtils.Alert(response.Error!.Message);
+			await JsUtils.Alert(response.Error);
 		}
 		else
 		{

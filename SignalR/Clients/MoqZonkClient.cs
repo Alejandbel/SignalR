@@ -42,7 +42,7 @@ internal class MoqZonkClient : IZonkClient
         throw new NotImplementedException();
     }
 
-    public Task<ResponseDTO> StartGame(string gameId)
+    public Task<ResponseDTO<GameInfo>> StartGame(string gameId)
     {
         throw new NotImplementedException();
     }

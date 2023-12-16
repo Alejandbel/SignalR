@@ -32,19 +32,20 @@ namespace Server.Hubs
 			return Task.FromResult(result);
 		}
 
-		public Task<ResponseDTO<GameInfo>> GetGame(string gameId)
+		public async Task<ResponseDTO<GameInfo>> GetGame(string gameId)
 		{
 			ResponseDTO<GameInfo> result;
 			try
 			{
 				var game = _zonkRooms.GetGameInfo(gameId);
+				await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
 				result = new(game);
 			}
 			catch (ServerException err)
 			{
 				result = new(err);
 			}
-			return Task.FromResult(result);
+			return result;
 		}
 
 		public async Task<ResponseDTO> AddPlayer(string gameId, string name)
@@ -55,6 +56,7 @@ namespace Server.Hubs
 				var game = _zonkRooms.GetGameOrFail(gameId);
 				game.AddPlayer(name);
 				await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
+				await Clients.Groups(gameId).GameChanged(game.GameInfo);
 				result = new();
 			}
 			catch (ServerException err)
@@ -111,36 +113,38 @@ namespace Server.Hubs
 			return result;
 		}
 
-		public Task<ResponseDTO<IEnumerable<int>>> RollDices(string gameId, string name)
+		public async Task<ResponseDTO<IEnumerable<int>>> RollDices(string gameId, string name)
 		{
 			ResponseDTO<IEnumerable<int>> result;
 			try
 			{
 				var game = _zonkRooms.GetGameOrFail(gameId);
 				var newDices = game.RollDices(name);
+				await Clients.Groups(gameId).GameChanged(game.GameInfo);
 				result = new(newDices);
 			}
 			catch (ServerException err)
 			{
 				result = new(err);
 			}
-			return Task.FromResult(result);
+			return result;
 		}
 
-		public Task<ResponseDTO> StartGame(string gameId)
+		public async Task<ResponseDTO<GameInfo>> StartGame(string gameId)
 		{
-			ResponseDTO result;
+			ResponseDTO<GameInfo> result;
 			try
 			{
 				var game = _zonkRooms.GetGameOrFail(gameId);
 				game.StartGame();
-				result = new();
+				await Clients.Groups(gameId).GameChanged(game.GameInfo);
+				result = new(game.GameInfo);
 			}
 			catch (ServerException err)
 			{
 				result = new(err);
 			}
-			return Task.FromResult(result);
+			return result;
 		}
 	}
 }

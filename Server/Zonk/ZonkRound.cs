@@ -11,15 +11,15 @@ namespace Server.Zonk
 		private Dictionary<string, PlayerMove> playersMove = new();
 		public Dictionary<string, PlayerMove> PlayersMove { get => playersMove; }
 
-		public bool IsEnded {get => playersMove.Values.All(p => p.IsEnded);}
+		public bool IsEnded { get => playersMove.Values.All(p => p.IsEnded); }
 
 		public ZonkRound(IEnumerable<string> players)
 		{
-            foreach (var player in players)
-            {
-				playersMove.Add("string", new(player));
-            }
-        }
+			foreach (var player in players)
+			{
+				playersMove.Add(player, new() { Name = player });
+			}
+		}
 
 		public int GetScore(string name)
 		{
@@ -62,7 +62,7 @@ namespace Server.Zonk
 				player.IsZonked = true;
 				player.Score = 0;
 				return dices;
-			} 
+			}
 
 			return dices;
 		}
@@ -71,22 +71,24 @@ namespace Server.Zonk
 		{
 			var player = GetPlayerOrFail(name);
 			AssertDicesValid(dices, player);
-			player.Dices = player.Dices.Except(dices);
+			player.DiceCount -= dices.Count();
 
 			var score = ZonkUtils.GetScore(dices);
 			player.Score += score;
 
-			var newDices = ZonkUtils.RollDices(player.Dices.Count());
+			var newDices = ZonkUtils.RollDices(player.DiceCount);
 
-			if (score == 0)
+			if (!ZonkUtils.IsAbleToMove(newDices))
 			{
 				player.IsZonked = true;
 				player.IsEnded = true;
+				player.Score = 0;
+				return newDices;
 			}
 
 			player.Dices = newDices;
 
-			return dices;
+			return newDices;
 		}
 
 		private static void AssertDicesValid(IEnumerable<int> dices, PlayerMove player)

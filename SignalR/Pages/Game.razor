@@ -1,109 +1,180 @@
 ﻿@page "/games/{gameId}"
 @inject IZonkClient ZonkClient
+@inject IZonkEvents ZonkEvents
 @inject IJsUtils JsUtils
+@inject UserUtils UserUtils
 
 <style>
-    #dices-list {
-        padding: 20px;
-        margin: 0;
-        list-style-type: none;
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-    }
+	#dices-list {
+		padding: 20px;
+		margin: 0;
+		list-style-type: none;
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+	}
 
-    img {
-        width: 40px;
-    }
+	img {
+		width: 40px;
+	}
 
-    .test {
-        border: 2px solid black;
-    }
+	.test {
+		border: 2px solid black;
+	}
 </style>
 
-@if (!gameInfo.IsStarted)
+@if (gameInfo != null)
 {
-    <button @onclick="StartGame">Start game</button>
-}
-else
-{
-    <TableScore Score="@gameInfo.Score" />
-    <h3>@gameInfo.CurrentRound</h3>
+	<p>UserList</p>
+	<ul>
+		@foreach (var user in gameInfo.Score.Keys)
+		{
+			<li>@user</li>
+		}
+	</ul>
 
-    <DiceList OnClick="ChooseDice" DiceNumbers="@diceNumbers" />
-    <DiceList OnClick="CancelDice" DiceNumbers="@selectedDices" />
+	if (!gameInfo.IsStarted)
+	{
+		if (!gameInfo.Score.Keys.Contains(userName))
+		{
+			<button @onclick="JoinGame">Join game</button>
+		}
+		<button @onclick="StartGame">Start game</button>
+	}
+	else
+	{
+		<TableScore Score="@gameInfo.Score" />
+		<h3>@gameInfo.CurrentRound</h3>
+		if (gameInfo.Moves[userName].IsZonked)
+		{
+			<p>ZONKED!!!</p>
+		}
+		if (gameInfo.IsEnded)
+		{
+			<p>Winner: @gameInfo.winner</p>
+		}
+		else
+		{
+			<DiceList OnClick="ChooseDice" DiceNumbers="@diceNumbers" />
+			<DiceList OnClick="CancelDice" DiceNumbers="@selectedDices" />
 
-    <p>Round score: @RoundScore</p>
-    <p>Game score: </p>
+			<p>Round score: @RoundScore</p>
+			<p>Game score: </p>
 
-    <button @onclick="Roll">Roll the dice</button>
-    <button @onclick="EndMove">Save</button>
+			<button @onclick="Roll">Roll the dice</button>
+			<button @onclick="EndMove">Save</button>
+		}
+	}	
 }
 
 @code {
-    [Parameter]
-    public string gameId { get; set; }
+	[Parameter]
+	public string GameId { get; set; }
 
-    public GameInfo gameInfo;
+	protected GameInfo gameInfo;
 
-    public int GameScore;
+	protected int GameScore;
 
-    public int RoundScore;
+	protected int RoundScore;
+	protected string userName;
 
 
-    protected List<int> diceNumbers = new List<int>();
+	protected List<int> diceNumbers = new List<int>();
 
-    protected List<int> selectedDices = new List<int>();
+	protected List<int> selectedDices = new List<int>();
 
-    protected async Task StartGame()
-    {
-        var response = await ZonkClient.StartGame(gameId);
+	protected async Task StartGame()
+	{
+		var response = await ZonkClient.StartGame(GameId);
 
-        if (!response.IsSuccess)
-        {
-            JsUtils.Alert(response.Error.Message);
-        }
+		if (!response.IsSuccess)
+		{
+			await JsUtils.Alert(response.Error);
+			return;
+		}
 
-        gameInfo = response.Data;
-    }
+		gameInfo = response.Data;
+	}
 
-    protected async Task CancelDice(int diceIndex)
-    {
-        diceNumbers.Add(selectedDices[diceIndex]);
-        selectedDices.RemoveAt(diceIndex);
-        RoundScore = ZonkUtils.GetScore(selectedDices);
-    }
+	protected async Task JoinGame()
+	{
+		var response = await ZonkClient.AddPlayer(GameId, userName);
 
-    protected async Task ChooseDice(int diceIndex)
-    {
-        selectedDices.Add(diceNumbers[diceIndex]);
-        diceNumbers.RemoveAt(diceIndex);
-        RoundScore = ZonkUtils.GetScore(selectedDices);
-    }
+		if (!response.IsSuccess)
+		{
+			await JsUtils.Alert(response.Error);
+		}
+	}
 
-    protected async Task Roll()
-    {
-        //diceNumbers = ZonkClient.ReRoll(GameId, Name, selectedDices);
-        selectedDices = new();
-        RoundScore = 0;
-        Random random = new Random();
-        diceNumbers = ZonkUtils.RollDices(random.Next(1, 7)).ToList();
-    }
+	protected async Task CancelDice(int diceIndex)
+	{
+		diceNumbers.Add(selectedDices[diceIndex]);
+		selectedDices.RemoveAt(diceIndex);
+		RoundScore = ZonkUtils.GetScore(selectedDices);
+	}
 
-    protected async Task EndMove()
-    {
-        //ZonkClient.EndMove(GameId, Name, selectedDices)
-        diceNumbers.Clear();
-    }
+	protected async Task ChooseDice(int diceIndex)
+	{
+		selectedDices.Add(diceNumbers[diceIndex]);
+		diceNumbers.RemoveAt(diceIndex);
+		RoundScore = ZonkUtils.GetScore(selectedDices);
+	}
 
-    protected override async Task OnInitializedAsync(){
-        var response = await ZonkClient.GetGame(gameId);
+	protected async Task Roll()
+	{
+		if (gameInfo.Moves[userName].Dices != null)
+		{
+			var response = await ZonkClient.RerollDices(GameId, userName, selectedDices);
+			if (!response.IsSuccess)
+			{
+				await JsUtils.Alert(response.Error);
+				return;
+			}
+			selectedDices.Clear();
+			diceNumbers = response.Data?.ToList();
+		} 
+		else
+		{
+			var response = await ZonkClient.RollDices(GameId, userName);
+			if (!response.IsSuccess)
+			{
+				await JsUtils.Alert(response.Error);
+				return;
+			}
+			diceNumbers = response.Data?.ToList();
+		}
+	}
 
-        if (!response.IsSuccess)
-        {
-            JsUtils.Alert(response.Error.Message);
-        }
+	protected async Task EndMove()
+	{
+		var response = await ZonkClient.EndMove(GameId, userName, selectedDices);
+		if (!response.IsSuccess)
+		{
+			await JsUtils.Alert(response.Error);
+			return;
+		}
+		selectedDices.Clear();
+		diceNumbers.Clear();
+	}
 
-        gameInfo = response.Data;
-    }
+	protected override async Task OnParametersSetAsync()
+	{
+		userName = await UserUtils.GetNameOrLogin();
+
+		var response = await ZonkClient.GetGame(GameId);
+
+		if (!response.IsSuccess)
+		{
+			await JsUtils.Alert(response.Error);
+		}
+
+		gameInfo = response.Data;
+
+		ZonkEvents.GameHasUpdated += (game => { 
+			gameInfo = game;
+			StateHasChanged();
+		});
+
+		await base.OnParametersSetAsync();
+	}
 }
